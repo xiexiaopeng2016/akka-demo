@@ -6,13 +6,16 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 
 /**
-  * Created by panguansen on 17/3/28.
-  */
+ * Created by panguansen on 17/3/28.
+ */
 class BossActor extends Actor {
   val log = Logging(context.system, this)
   implicit val askTimeout = Timeout(5 seconds)
+
   import context.dispatcher
+
   var taskCount = 0
+
   def receive: Receive = {
     case b: Business =>
       log.info("I must to do some thing,go,go,go!")
@@ -42,9 +45,12 @@ class BossActor extends Actor {
       }
     }
   }
+
 }
+
 class ManagerActor extends Actor {
   val log = Logging(context.system, this)
+
   def receive: Receive = {
     case m: Meeting =>
       sender() ! Confirm("I have receive command", self.path)
@@ -56,6 +62,7 @@ class ManagerActor extends Actor {
 
 class WorkerActor extends Actor {
   val log = Logging(context.system, this)
+
   def receive: Receive = {
     case d: DoAction =>
       log.info("I have receive task")
@@ -66,10 +73,15 @@ class WorkerActor extends Actor {
 trait Message {
   val content: String
 }
+
 case class Business(content: String) extends Message {}
+
 case class Meeting(content: String) extends Message {}
+
 case class Confirm(content: String, actorPath: ActorPath) extends Message {}
+
 case class DoAction(content: String) extends Message {}
+
 case class Done(content: String) extends Message {}
 
 object Example_02 extends App {

@@ -36,6 +36,7 @@ class Supervisor extends Actor {
 class Child extends Actor {
   val log = Logging(context.system, this)
   var state = 0
+
   def receive = {
     case ex: Exception => throw ex //抛出相应的异常
     case x: Int => state = x //改变自身状态

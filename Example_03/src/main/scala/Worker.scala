@@ -2,20 +2,25 @@ import akka.actor.SupervisorStrategy.Stop
 import akka.actor._
 import akka.event.LoggingReceive
 import akka.util.Timeout
-import akka.pattern.{ ask, pipe }
+import akka.pattern.{ask, pipe}
 
 import scala.concurrent.duration._
+
 /**
-  * Created by panguansen on 17/3/26.
-  */
+ * Created by panguansen on 17/3/26.
+ */
 object Worker {
+
   case object Start
+
   case object Do
+
   case class Progress(percent: Double)
+
 }
 
-
 class Listener extends Actor with ActorLogging {
+
   import Worker._
   // If we don't get any progress within 15 seconds then the service is unavailable
   //假如我们在15秒之内得不到任何反馈即表示当前服务不可用
@@ -38,8 +43,10 @@ class Listener extends Actor with ActorLogging {
 }
 
 class Worker extends Actor with ActorLogging {
+
   import Worker._
   import CounterService._
+
   implicit val askTimeout = Timeout(5 seconds)
 
   // Stop the CounterService child if it throws ServiceUnavailable
@@ -53,6 +60,7 @@ class Worker extends Actor with ActorLogging {
   var progressListener: Option[ActorRef] = None
   val counterService = context.actorOf(Props[CounterService], name = "counter")
   val totalCount = 51
+
   import context.dispatcher // Use this Actors' Dispatcher as ExecutionContext
 
   def receive = LoggingReceive {

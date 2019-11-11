@@ -5,19 +5,25 @@ import akka.event.LoggingReceive
 import scala.concurrent.duration._
 
 /**
-  * Created by panguansen on 17/3/26.
-  */
+ * Created by panguansen on 17/3/26.
+ */
 
 object CounterService {
+
   case class Increment(n: Int)
+
   case object GetCurrentCount
+
   case class CurrentCount(key: String, count: Long)
+
   class ServiceUnavailable(msg: String) extends RuntimeException(msg)
 
   private case object Reconnect
+
 }
 
 class CounterService extends Actor {
+
   import CounterService._
   import Counter._
   import Storage._
@@ -26,8 +32,7 @@ class CounterService extends Actor {
   // After 3 restarts within 5 seconds it will be stopped.
   // 当storage抛出StorageException时重启storage
   // 如果5秒内3次重启还未成功就停止它
-  override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 3,
-    withinTimeRange = 5 seconds) {
+  override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 3, withinTimeRange = 5 seconds) {
     case _: Storage.StorageException => Restart
   }
 
@@ -44,15 +49,17 @@ class CounterService extends Actor {
   }
 
   /**
-    * The child storage is restarted in case of failure, but after 3 restarts,
-    * and still failing it will be stopped. Better to back-off than continuously
-    * failing. When it has been stopped we will schedule a Reconnect after a delay.
-    * Watch the child so we receive Terminated message when it has been terminated.
-    */
+   * The child storage is restarted in case of failure, but after 3 restarts,
+   * and still failing it will be stopped. Better to back-off than continuously
+   * failing. When it has been stopped we will schedule a Reconnect after a delay.
+   * Watch the child so we receive Terminated message when it has been terminated.
+   */
   def initStorage() {
     storage = Some(context.watch(context.actorOf(Props[Storage], name = "storage")))
     // Tell the counter, if any, to use the new storage
-    counter foreach { _ ! UseStorage(storage) }
+    counter foreach {
+      _ ! UseStorage(storage)
+    }
     // We need the initial value to be able to operate
     storage.get ! Get(key)
   }
@@ -69,7 +76,7 @@ class CounterService extends Actor {
       for ((replyTo, msg) <- backlog) c.tell(msg, sender = replyTo)
       backlog = IndexedSeq.empty
 
-    case msg @ Increment(n)    => forwardOrPlaceInBacklog(msg)
+    case msg @ Increment(n) => forwardOrPlaceInBacklog(msg)
 
     case msg @ GetCurrentCount => forwardOrPlaceInBacklog(msg)
 
@@ -78,7 +85,9 @@ class CounterService extends Actor {
       // We receive Terminated because we watch the child, see initStorage.
       storage = None
       // Tell the counter that there is no storage for the moment
-      counter foreach { _ ! UseStorage(None) }
+      counter foreach {
+        _ ! UseStorage(None)
+      }
       // Try to re-establish storage after while
       context.system.scheduler.scheduleOnce(10 seconds, self, Reconnect)
 
@@ -96,7 +105,8 @@ class CounterService extends Actor {
       case None =>
         if (backlog.size >= MaxBacklog)
           throw new ServiceUnavailable(
-            "CounterService not available, lack of initial value")
+            "CounterService not available, lack of initial value"
+          )
         backlog :+= (sender() -> msg)
     }
   }

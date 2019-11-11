@@ -7,7 +7,7 @@ lazy val allResolvers = Seq(
   "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 )
 
-val akkaVersion = "2.5.3"
+val akkaVersion = "2.6.0"
 
 lazy val AllLibraryDependencies =
   Seq(
@@ -22,7 +22,7 @@ lazy val AllLibraryDependencies =
 
 lazy val commonSettings = Seq(
   version := "1.0",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.13.1",
   resolvers := allResolvers,
   libraryDependencies := AllLibraryDependencies
 )
